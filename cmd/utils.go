@@ -283,22 +283,15 @@ func getVolumeArgs(config *RootCommandConfig) ([]string, error) {
 		return volumeArgs, nil
 	}
 	stackMountList := strings.Split(stackMounts, ";")
-
-		config.Warning.logf("SKSK - stackMountList '%s'", stackMountList)
-
 	homeDir := UserHomeDir(config.LoggingConfig)
 	homeDirOverride := os.Getenv("APPSODY_MOUNT_HOME")
 	homeDirOverridden := false
-	config.Warning.logf("SKSK home dir '%s' homediroverride '%s' ", homeDir, homeDirOverride)
-
 	if homeDirOverride != "" {
-		config.Warning.logf("Overriding home mount dir from '%s' to APPSODY_MOUNT_HOME value '%s' ", homeDir, homeDirOverride)
+		config.Debug.logf("Overriding home mount dir from '%s' to APPSODY_MOUNT_HOME value '%s' ", homeDir, homeDirOverride)
 		homeDir = homeDirOverride
 		homeDirOverridden = true
 	}
-
 	projectDir, perr := getProjectDir(config)
-	config.Warning.logf("SKSK project dir '%s' ", projectDir)
 	if perr != nil {
 		return volumeArgs, perr
 
@@ -306,7 +299,7 @@ func getVolumeArgs(config *RootCommandConfig) ([]string, error) {
 	projectDirOverride := os.Getenv("APPSODY_MOUNT_PROJECT")
 	projectDirOverridden := false
 	if projectDirOverride != "" {
-		config.Warning.logf("Overriding project mount dir from '%s' to APPSODY_MOUNT_PROJECT value '%s' ", projectDir, projectDirOverride)
+		config.Debug.logf("Overriding project mount dir from '%s' to APPSODY_MOUNT_PROJECT value '%s' ", projectDir, projectDirOverride)
 		projectDir = projectDirOverride
 		projectDirOverridden = true
 	}
@@ -320,19 +313,12 @@ func getVolumeArgs(config *RootCommandConfig) ([]string, error) {
 		if strings.HasPrefix(mount, "~") {
 			mappedMount = strings.Replace(mount, "~", homeDir, 1)
 			overridden = homeDirOverridden
-	        config.Warning.logf("SKSK 1 mappedmount '%s'", mappedMount)
 		} else {
-	        config.Warning.logf("SKSK 2 project dir '%s', mount '%s' ", projectDir, mount)
-
-            if strings.HasPrefix(mount, ".:") {
-                mount = ":" + strings.TrimPrefix(mount, ".:")
-	            config.Warning.logf("SKSK 3 mount '%s' ", mount)
-            }
-
+			if strings.HasPrefix(mount, ".:") {
+				mount = ":" + strings.TrimPrefix(mount, ".:")
+			}
 			mappedMount = filepath.Join(projectDir, mount)
 			overridden = projectDirOverridden
-	        config.Warning.logf("SKSK 2 mappedmount '%s'", mappedMount)
-	        config.Warning.logf("SKSK 2 overridden '%t'", overridden)
 		}
 		// mappedMount contains local and container (linux) paths. When on windows, the Join above replaces all '/' with '\' and
 		// breaks the linux paths. This method is to always use '/' because windows docker tolerates this.
@@ -344,7 +330,7 @@ func getVolumeArgs(config *RootCommandConfig) ([]string, error) {
 		}
 		volumeArgs = append(volumeArgs, "-v", mappedMount)
 	}
-	config.Warning.log("Mapped mount args: ", volumeArgs)
+	config.Debug.log("Mapped mount args: ", volumeArgs)
 	return volumeArgs, nil
 }
 
@@ -2382,5 +2368,3 @@ func RemoveIfExists(path string) error {
 	}
 	return nil
 }
-
-
